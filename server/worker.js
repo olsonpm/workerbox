@@ -4,7 +4,7 @@ import createSuperJSON from '../lib/createSuperJSON.js';
 async function scopedEval (context, expr) {
   const evaluator = Function.apply(null, [
     ...Object.keys(context),
-    `return (async function sandbox () {${expr} })()`
+    expr
   ]);
   return evaluator.apply(null, [...Object.values(context)]);
 }
