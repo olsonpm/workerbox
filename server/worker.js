@@ -20,7 +20,7 @@ self.addEventListener('message', async (event) => {
 
       try {
         globalThis.workerboxScope = parsedScope
-        eval?.(code)
+        await eval?.(code)
         port.postMessage(['return', { id, args: superjson.stringify([undefined]) }]);
       } catch (error) {
         port.postMessage(['error', { id: errorId, args: superjson.stringify([error]) }]);
