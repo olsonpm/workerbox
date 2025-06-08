@@ -19,11 +19,24 @@ self.addEventListener('message', async (event) => {
       const parsedScope = superjson.parse(scope);
 
       try {
-        globalThis.workerboxScope = parsedScope
+        const { timeoutMs } = message
+        let timeoutId
+
+        globalThis.workerboxScope = {
+          ...parsedScope,
+          _done: () => {
+            clearTimeout(timeoutId)
+            port.postMessage(['return', { id, args: superjson.stringify([undefined]) }]);
+          }
+        }
         eval?.(code)
-        port.postMessage(['return', { id, args: superjson.stringify([undefined]) }]);
-      } catch (error) {
-        port.postMessage(['error', { id: errorId, args: superjson.stringify([error]) }]);
+
+        timeoutId = setTimeout(() => {
+          port.postMessage(['error', { id: errorId, args: superjson.stringify(['timeout', timeoutMs]) }]);
+        }, timeoutMs)
+      } catch (err) {
+        clearTimeout(timeoutId)
+        port.postMessage(['error', { id: errorId, args: superjson.stringify([err]) }]);
       }
     }
 
